@@ -15,7 +15,8 @@
 #include <iostream>
 #include <string>
 #include <fstream>
-#define COL_WIDTH 1000000
+#include <bits/stdc++.h>
+#define COL_WIDTH 100000
 using namespace std;
 //Function used to clear the input
 
@@ -62,11 +63,106 @@ class Admin {
         void displayPassengerInfo();
     private:
         string password; 
+        void printSpecificInfo(int counter, char* lines, string header);
 };
+
+//A private method working in sync with displayPassengerInfo()
+void Admin::printSpecificInfo(int counter, char* lines, string header) {
+    //to check if counter2 is equal to counter
+    int counter2 = 0;
+    //same thing as displayPassengerInfo()
+    string s_a = lines, check;
+    stringstream check1(s_a);
+    while(getline(check1, check, ' ')){
+        counter2++;
+        //Arrive the appropriate data
+        if(counter2 == counter){
+            //Make it look good
+            cout << header << ":" << check << endl;
+        }
+    }
+}
+
+//Method to print out a specific passenger's info
+void Admin::displayPassengerInfo() {
+    string fileName[] = {"Username.txt","Password.txt","Name.txt","Age.txt","City.txt"};
+    string header[] = {"Username ","Password ","Name ", "Age ", "City "};
+    char lines[COL_WIDTH+1];
+    string name,check;
+    while(true){
+        //Asking for passenger's name
+        cout << "Please enter the name of the passenger you would like to inspect:\n";
+        getline(cin,name);
+        //storing all the info from Name.txt to lines in order to parse it later
+        savingFile(fileName[2],lines,0);
+        //Turning lines into a string
+        string s_a = lines;
+        //Turing s_a into a stringstream object for parsing
+        stringstream check1(s_a);
+        int counter = 0;
+        bool existName = false;
+        //getting the token into check
+        while(getline(check1,check,' ')){
+            //increasing the counter for later
+            counter++;
+            //if it exists, that means the passenger exists
+            if(name == check){
+                existName = true;
+                break;
+            }
+        }
+        //The passenger does not exist
+        if(existName == false){
+            cout << "This passenger does not exist. Please try again.\n";
+        }
+        //The passenger does exist
+        else {
+            //Now getting the username,password, name, age, and city of the specific passenger
+            for(int i = 0; i < 5; i++){
+                //getting all the data from the specific files
+                savingFile(fileName[i],lines,0);
+                //using a private method to print out the correct info
+                printSpecificInfo(counter, lines,header[i]);
+            }
+            //ending
+            break;
+        }
+    }
+}
+//Method is used to print out the data from the files
+void Admin::printDatabase(){
+    clearingInput();
+    //String array storing file names
+    string fileName[] = {"Username.txt","Password.txt","Name.txt","Age.txt","City.txt"};
+    //String array storing the header
+    string header[] = {"Username ","Password ","Name ", "Age ", "City "};
+    //To store the data from the files
+    char lines[COL_WIDTH + 1];
+    for(int i = 0; i < 5; i++){
+        cout << "-------------------------------------------------------------------------------------------\n";
+        //Storing the lines in character array lines
+        savingFile(fileName[i],lines,0);
+        //Convert from char array to string
+        string str = lines;
+        //Printint out the lines
+        cout << header[i] << "|";
+        for(int j = 0; j < str.length(); j++){
+            if(str[j] == ' '){
+                cout << "|";
+            }
+            else {
+                cout << str[j];
+            } 
+        }
+        cout << "|" << endl;
+        
+    }
+    cout << "-------------------------------------------------------------------------------------------\n";
+}
 
 //This admin method is for creating user and passenger info
 void Admin::userRegisteration() {
-    //Clear out previous user inputs
+    //Clearing inputs
     clearingInput();
     //for spacing at the beginning of the files
     int num = 0;
@@ -176,7 +272,7 @@ void Menu::adminMenu() {
             break;
         }
         else if(decision == 2){
-            //admin.printDatabase();
+            admin.printDatabase();
             break;
         }
         else if(decision == 3){
@@ -188,7 +284,7 @@ void Menu::adminMenu() {
             break;
         }
         else if(decision == 5){
-            //admin.displayPassengerInfo();
+            admin.displayPassengerInfo();
             break;
         }
         else {
