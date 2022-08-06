@@ -62,10 +62,115 @@ class Admin {
         void editUsernameOrPassword();
         void displayPassengerInfo();
     private:
+        bool verifyUsername(string fileName,string username, int *counter);
         string password; 
         void printSpecificInfo(int counter, char* lines, string header);
+        void editFiles(string fileName,string input, int counter);
 };
 
+//A private method that verifies the username
+bool Admin::verifyUsername(string fileName,string username, int *counter){
+    //character arrays to store the data from the files 
+    char lines[COL_WIDTH+1];
+    //Saving the file
+    savingFile(fileName,lines,0);
+    //converting lines to a string
+    string s_a = lines, check;
+    //stringstream used to parse s_a
+    stringstream check1(s_a);
+    //if it hits a space, tokenize it
+    while(getline(check1,check,' ')){
+        //increament counter by 1 
+        *counter+=1;
+        //if it finds the username
+        if(check == username){
+            return true;
+        }
+    }
+    cout << "This user does not exist.\n";
+    return false;
+}
+
+//A private method that edits whatever files at whatever positions
+void Admin::editFiles(string fileName, string input, int counter) {
+    //character arrays to store the data from the files
+    char lines[COL_WIDTH + 1];
+    //saving the file
+    savingFile(fileName,lines,0);
+    //Creating an ofstream object with the filename
+    ofstream object(fileName);
+    //converting lines to a string
+    string s_a = lines,check;
+    stringstream check1(s_a);
+    while(getline(check1,check,' ')){
+        counter--;
+        if(counter == 0){
+            check = input;  
+        }
+        object << check << " ";
+    }
+    object.close();
+}
+//A public method to edit the username,password,or both
+void Admin::editUsernameOrPassword() {
+    //clearing all previous user inputs
+    clearingInput();
+    string username_ori,username, password,decision;
+    char username_line[COL_WIDTH+1], password_line[COL_WIDTH+1];
+    int counter = 0;
+    //Asking for the username
+    cout << "Please enter the username:\n";
+    getline(cin,username_ori);
+    //if the username exists within the username.txt file
+    if(verifyUsername("Username.txt",username_ori,&counter)){
+        //Ask if they want to change the username as well
+        cout << "Would you like to change the username(Y/N):" << endl;
+        getline(cin,decision);
+        if(decision == "Y" || decision == "y"){
+            while(true){
+                //Ask for new username
+                cout << "Please enter the new username:" << endl;
+                getline(cin,username);
+                //if it is 8 characters or longer, that means its strong enough
+                if(string_leng(username)){
+                    break;
+                }
+                //if the new username is the same as the old username, try again
+                else if(username_ori == username){
+                    cout << "The new username cannot be the same as the old username.\n";
+                }
+                //The username is not strong enough
+                else {
+                    cout << "It has to be 8 characters or longer."<< endl;
+                }
+            }
+        }
+        while(true) {
+            //Now ask for new password
+            cout << "Please enter the new password:" << endl;
+            getline(cin,password);
+            //8 characters or longer
+            if(string_leng(password)){
+                break;
+            }
+            //Using verifyUsername to see if it is the same password
+            else if(verifyUsername("Password.txt",password,0)) {
+                cout << "The new password cannot be the same as the old password.\n";
+            }
+            //Password is simply not strong enough
+            else {
+                cout << "It has to be 8 characters or longer." <<endl;
+            }
+        }
+    }
+    //the username changes
+    if(decision == "Y" || decision == "y"){
+        //uSe private method editFiles() to change the username at the correct positions
+        editFiles("Username.txt",username,counter);
+    }
+    //same for the password
+    editFiles("Password.txt",password,counter);
+}
 //A private method working in sync with displayPassengerInfo()
 void Admin::printSpecificInfo(int counter, char* lines, string header) {
     //to check if counter2 is equal to counter
@@ -85,6 +190,7 @@ void Admin::printSpecificInfo(int counter, char* lines, string header) {
 
 //Method to print out a specific passenger's info
 void Admin::displayPassengerInfo() {
+    clearingInput();
     string fileName[] = {"Username.txt","Password.txt","Name.txt","Age.txt","City.txt"};
     string header[] = {"Username ","Password ","Name ", "Age ", "City "};
     char lines[COL_WIDTH+1];
@@ -94,29 +200,8 @@ void Admin::displayPassengerInfo() {
         cout << "Please enter the name of the passenger you would like to inspect:\n";
         getline(cin,name);
         //storing all the info from Name.txt to lines in order to parse it later
-        savingFile(fileName[2],lines,0);
-        //Turning lines into a string
-        string s_a = lines;
-        //Turing s_a into a stringstream object for parsing
-        stringstream check1(s_a);
         int counter = 0;
-        bool existName = false;
-        //getting the token into check
-        while(getline(check1,check,' ')){
-            //increasing the counter for later
-            counter++;
-            //if it exists, that means the passenger exists
-            if(name == check){
-                existName = true;
-                break;
-            }
-        }
-        //The passenger does not exist
-        if(existName == false){
-            cout << "This passenger does not exist. Please try again.\n";
-        }
-        //The passenger does exist
-        else {
+        if(verifyUsername(fileName[2],name,&counter)) {
             //Now getting the username,password, name, age, and city of the specific passenger
             for(int i = 0; i < 5; i++){
                 //getting all the data from the specific files
@@ -126,6 +211,9 @@ void Admin::displayPassengerInfo() {
             }
             //ending
             break;
+        }
+        else {
+            return;
         }
     }
 }
@@ -280,7 +368,7 @@ void Menu::adminMenu() {
             break;
         }
         else if(decision == 4){
-            //admin.editUsernameOrPassword();
+            admin.editUsernameOrPassword();
             break;
         }
         else if(decision == 5){
