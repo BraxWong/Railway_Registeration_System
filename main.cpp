@@ -16,6 +16,8 @@
 #include <string>
 #include <fstream>
 #include <bits/stdc++.h>
+#include <cstdlib>
+#include <ctime>
 #define COL_WIDTH 100000
 using namespace std;
 //Function used to clear the input
@@ -58,7 +60,7 @@ class Admin {
         string getPassword();
         void userRegisteration();
         void printDatabase();
-        void dataEntry();
+        void displayTrainSchedule();
         void editUsernameOrPassword();
         void displayPassengerInfo();
     private:
@@ -91,6 +93,26 @@ bool Admin::verifyUsername(string fileName,string username, int *counter){
     return false;
 }
 
+void Admin::displayTrainSchedule() {
+    //Populating the location array with train stations
+    string location[] = {"Waterloo","Victoria","Liverpool Street","London Bridge","Charing Cross","Euston","Paddington","Birmingham New Street","King's Cross","Glasgow Central","Leeds","St.Pancras","Edinburgh","Clapham Junction","Stratford","Glasgow Queen Street","East Croydon","Cannon Street","Manchester Piccadilly","Wimbledon","Vauxhall","Fenchurch Street","Brighton","Reading","Gatwick Airport","Gatwick Airport","Marylebone","Liverpool Central","Ilford","St.Albans City","Balham","Nottingham","Oxford","Sutton","Bath Spa","Kingston","Earlsfield","City Thameslink"};
+    //Calculating the size of location
+    int size = *(&location + 1) - location;
+    int seats = 500;
+    //Random number
+    srand(time(0));
+    //Time slot array
+    string time[] = {"10:00","10:10","10:20","10:30","10:40","10:50","11:00"};
+    //Two pointers array
+    for(int i = 0; i < size; i++){
+        //Generating a new random number in every iterlation, a random number from 0 to 7
+        int randomNumber = rand() % 6;
+        for(int j = i + 1; j < size; j++){
+            //Displaying the info
+            cout << location[i] << " to " << location[j] << " departs at " << time[randomNumber] << " at platform " << randomNumber << endl;
+        }
+    }
+}
 //A private method that edits whatever files at whatever positions
 void Admin::editFiles(string fileName, string input, int counter) {
     //character arrays to store the data from the files
@@ -254,9 +276,9 @@ void Admin::userRegisteration() {
     clearingInput();
     //for spacing at the beginning of the files
     int num = 0;
-    string username, password, passengerName, age, city, username_file = "Username.txt", password_file = "Password.txt", Passenger_Name_File = "Name.txt", Age_file = "Age.txt", City_File = "City.txt";
+    string username, password, passengerName, age, city, username_file = "Username.txt", password_file = "Password.txt", Passenger_Name_File = "Name.txt", Age_file = "Age.txt", City_File = "City.txt", Departure_File = "Departure.txt", Destinaton_File = "Destination.txt";
     //To store pre-existing data within the files
-    char username_line[COL_WIDTH + 1],password_line[COL_WIDTH+1], passenger_line[COL_WIDTH + 1], name_line[COL_WIDTH + 1], age_line[COL_WIDTH + 1], city_line[COL_WIDTH + 1];
+    char username_line[COL_WIDTH + 1],password_line[COL_WIDTH+1], passenger_line[COL_WIDTH + 1], name_line[COL_WIDTH + 1], age_line[COL_WIDTH + 1], city_line[COL_WIDTH + 1], depart_line[COL_WIDTH + 1], dest_line[COL_WIDTH + 1];
     //while loop to check whether the username and passwords are 8 characters or longer
     while(true){
         cout << "Please enter your username(8 characters or longer):";
@@ -281,9 +303,11 @@ void Admin::userRegisteration() {
     savingFile(Passenger_Name_File,passenger_line,&num);
     savingFile(Age_file,age_line,&num);
     savingFile(City_File,city_line,&num);
+    savingFile(Departure_File,depart_line,&num);
+    savingFile(Destinaton_File,dest_line,&num);
     //Wiping the files and creating ofstream objects
-    ofstream fUser(username_file), fPassword(password_file), fName(Passenger_Name_File),fAge(Age_file),fCity(City_File);
-    if(!fUser || !fPassword || !fName || !fAge || !fCity){
+    ofstream fUser(username_file), fPassword(password_file), fName(Passenger_Name_File),fAge(Age_file),fCity(City_File), fDepart(Departure_File), fDest(Destinaton_File);
+    if(!fUser || !fPassword || !fName || !fAge || !fCity || !fDepart || !fDest){
         cout << "The file does not exist.Exiting\n";
         return;
     }
@@ -294,6 +318,8 @@ void Admin::userRegisteration() {
         fName << passenger_line << " ";
         fAge << age_line << " ";
         fCity << city_line << " ";
+        fDepart << depart_line << " ";
+        fDest << dest_line << " ";
     }
     //Putting all the data into the corresponding files
     fUser << username;
@@ -301,12 +327,16 @@ void Admin::userRegisteration() {
     fName << passengerName;
     fAge << age;
     fCity << city;
+    fDepart << "NULL";
+    fDest << "NULL";
     //Closing the files
     fUser.close();
     fPassword.close();
     fName.close();
     fAge.close();
     fCity.close();
+    fDepart.close();
+    fDest.close();
 }
 //Since password is private, then a password getter is needed
 string Admin::getPassword() {
@@ -364,7 +394,7 @@ void Menu::adminMenu() {
             break;
         }
         else if(decision == 3){
-            //admin.dataEntry();
+            admin.displayTrainSchedule();
             break;
         }
         else if(decision == 4){
