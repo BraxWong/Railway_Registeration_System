@@ -46,6 +46,17 @@ void savingFile(string str, char* line, int *num){
     object.close();
 }
 
+string saveAnotherFile(string str){
+    ifstream object;
+    object.open(str);
+    string output,output2;
+    while(object.good()){
+        getline(object,output,',');
+        output2 = output2 + output;
+    }
+    return output2;
+}
+
 //Check if the username or password is strong enough
 bool string_leng(string str) {
     if(str.length() >= 8){
@@ -60,7 +71,7 @@ class Admin {
         string getPassword();
         void userRegisteration();
         void printDatabase();
-        void displayTrainSchedule();
+        void CreatingAndTrainSchedule();
         void editUsernameOrPassword();
         void displayPassengerInfo();
     private:
@@ -68,8 +79,38 @@ class Admin {
         string password; 
         void printSpecificInfo(int counter, char* lines, string header);
         void editFiles(string fileName,string input, int counter);
+        ofstream createFiles(string fileName);
 };
 
+ofstream Admin::createFiles(string fileName) {
+    ofstream object;
+    object.open(fileName);
+    return object;
+}
+
+void Admin::CreatingAndTrainSchedule() {
+    ofstream trainSchedule = createFiles("Week25_TrainSchedule.csv");
+    //Populating the location array with train stations
+    string location[] = {"Waterloo","Victoria","Liverpool Street","London Bridge","Charing Cross","Euston","Paddington","Birmingham New Street","King's Cross","Glasgow Central","Leeds","St.Pancras","Edinburgh","Clapham Junction","Stratford","Glasgow Queen Street","East Croydon","Cannon Street","Manchester Piccadilly","Wimbledon","Vauxhall","Fenchurch Street","Brighton","Reading","Gatwick Airport","Gatwick Airport","Marylebone","Liverpool Central","Ilford","St.Albans City","Balham","Nottingham","Oxford","Sutton","Bath Spa","Kingston","Earlsfield","City Thameslink"};
+    //Calculating the size of location
+    int size = *(&location + 1) - location;
+    int seats = 500;
+    trainSchedule << "Depart" << "," << "Dest" << "," << "Time" << "," << "Platform" << "," <<"Capacity" << endl;
+    //Random number
+    srand(time(0));
+    //Time slot array
+    string time[] = {"10:00","10:10","10:20","10:30","10:40","10:50","11:00"};
+    //Two pointers array
+    for(int i = 0; i < size; i++){
+        //Generating a new random number in every iterlation, a random number from 0 to 7
+        for(int j = i + 1; j < size; j++){
+            int randomNumber = rand() % 6;
+            //Displaying the info
+            trainSchedule <<  location[i] << "," << location[j] << "," << time[randomNumber] << "," << randomNumber << "," << 500 << endl;
+        }
+    }
+    trainSchedule.close();
+}
 //A private method that verifies the username
 bool Admin::verifyUsername(string fileName,string username, int *counter){
     //character arrays to store the data from the files 
@@ -93,26 +134,7 @@ bool Admin::verifyUsername(string fileName,string username, int *counter){
     return false;
 }
 
-void Admin::displayTrainSchedule() {
-    //Populating the location array with train stations
-    string location[] = {"Waterloo","Victoria","Liverpool Street","London Bridge","Charing Cross","Euston","Paddington","Birmingham New Street","King's Cross","Glasgow Central","Leeds","St.Pancras","Edinburgh","Clapham Junction","Stratford","Glasgow Queen Street","East Croydon","Cannon Street","Manchester Piccadilly","Wimbledon","Vauxhall","Fenchurch Street","Brighton","Reading","Gatwick Airport","Gatwick Airport","Marylebone","Liverpool Central","Ilford","St.Albans City","Balham","Nottingham","Oxford","Sutton","Bath Spa","Kingston","Earlsfield","City Thameslink"};
-    //Calculating the size of location
-    int size = *(&location + 1) - location;
-    int seats = 500;
-    //Random number
-    srand(time(0));
-    //Time slot array
-    string time[] = {"10:00","10:10","10:20","10:30","10:40","10:50","11:00"};
-    //Two pointers array
-    for(int i = 0; i < size; i++){
-        //Generating a new random number in every iterlation, a random number from 0 to 7
-        int randomNumber = rand() % 6;
-        for(int j = i + 1; j < size; j++){
-            //Displaying the info
-            cout << location[i] << " to " << location[j] << " departs at " << time[randomNumber] << " at platform " << randomNumber << endl;
-        }
-    }
-}
+
 //A private method that edits whatever files at whatever positions
 void Admin::editFiles(string fileName, string input, int counter) {
     //character arrays to store the data from the files
@@ -270,74 +292,92 @@ void Admin::printDatabase(){
     cout << "-------------------------------------------------------------------------------------------\n";
 }
 
-//This admin method is for creating user and passenger info
+// //This admin method is for creating user and passenger info
 void Admin::userRegisteration() {
-    //Clearing inputs
     clearingInput();
-    //for spacing at the beginning of the files
-    int num = 0;
-    string username, password, passengerName, age, city, username_file = "Username.txt", password_file = "Password.txt", Passenger_Name_File = "Name.txt", Age_file = "Age.txt", City_File = "City.txt", Departure_File = "Departure.txt", Destinaton_File = "Destination.txt";
-    //To store pre-existing data within the files
-    char username_line[COL_WIDTH + 1],password_line[COL_WIDTH+1], passenger_line[COL_WIDTH + 1], name_line[COL_WIDTH + 1], age_line[COL_WIDTH + 1], city_line[COL_WIDTH + 1], depart_line[COL_WIDTH + 1], dest_line[COL_WIDTH + 1];
-    //while loop to check whether the username and passwords are 8 characters or longer
+    string input = saveAnotherFile("User_Info.csv");
+    ofstream fileName = createFiles("User_Info.csv");
+    string username, password,passenger_Name,age,city;
+    fileName << "Username" << "," << "Password" << "," << "Passenger_Name" << "," << "Age" << "," << "City" << "," << "Upcoming_Trip" << endl;
     while(true){
-        cout << "Please enter your username(8 characters or longer):";
+        cout << "Please enter your username (8 characters or longer):";
         getline(cin,username);
-        cout << "Please enter your password(8 characters or longer):";
+        cout << "Please enter your password (8 characters or longer):";
         getline(cin,password);
         if(string_leng(username) && string_leng(password)){
             break;
         }
-        cout << "Username and password has to be 8 characters or longer.\n";
     }
-    //Asking for name, age, and city
-    cout << "Please enter your first name:";
-    getline(cin,passengerName);
+    cout << "Please enter your name:";
+    getline(cin,passenger_Name);
     cout << "Please enter your age:";
     getline(cin,age);
     cout << "Please enter the city where you reside:";
     getline(cin,city);
-    //Saving all the files and putting the data in the character arrays 
-    savingFile(username_file,username_line,&num);
-    savingFile(password_file,password_line,&num);
-    savingFile(Passenger_Name_File,passenger_line,&num);
-    savingFile(Age_file,age_line,&num);
-    savingFile(City_File,city_line,&num);
-    savingFile(Departure_File,depart_line,&num);
-    savingFile(Destinaton_File,dest_line,&num);
-    //Wiping the files and creating ofstream objects
-    ofstream fUser(username_file), fPassword(password_file), fName(Passenger_Name_File),fAge(Age_file),fCity(City_File), fDepart(Departure_File), fDest(Destinaton_File);
-    if(!fUser || !fPassword || !fName || !fAge || !fCity || !fDepart || !fDest){
-        cout << "The file does not exist.Exiting\n";
-        return;
-    }
-    //if num is not zero, that means those files do not exist, therefore these lines are not required. Else they will paste all the pre-existing data into the corresponding files
-    if(num == 0){
-        fUser << username_line << " ";
-        fPassword << password_line << " ";
-        fName << passenger_line << " ";
-        fAge << age_line << " ";
-        fCity << city_line << " ";
-        fDepart << depart_line << " ";
-        fDest << dest_line << " ";
-    }
-    //Putting all the data into the corresponding files
-    fUser << username;
-    fPassword << password;
-    fName << passengerName;
-    fAge << age;
-    fCity << city;
-    fDepart << "NULL";
-    fDest << "NULL";
-    //Closing the files
-    fUser.close();
-    fPassword.close();
-    fName.close();
-    fAge.close();
-    fCity.close();
-    fDepart.close();
-    fDest.close();
+    fileName << input;
+    fileName << username << "," << password << "," << passenger_Name << "," << age << "," << city << "," << "NULL";
+    fileName.close();
+    
 }
+// void Admin::userRegisteration() {
+//     //Clearing inputs
+//     clearingInput();
+//     //for spacing at the beginning of the files
+//     int num = 0;
+//     string username, password, passengerName, age, city, username_file = "Username.txt", password_file = "Password.txt", Passenger_Name_File = "Name.txt", Age_file = "Age.txt", City_File = "City.txt";
+//     //To store pre-existing data within the files
+//     char username_line[COL_WIDTH + 1],password_line[COL_WIDTH+1], passenger_line[COL_WIDTH + 1], name_line[COL_WIDTH + 1], age_line[COL_WIDTH + 1], city_line[COL_WIDTH + 1];
+//     //while loop to check whether the username and passwords are 8 characters or longer
+//     while(true){
+//         cout << "Please enter your username(8 characters or longer):";
+//         getline(cin,username);
+//         cout << "Please enter your password(8 characters or longer):";
+//         getline(cin,password);
+//         if(string_leng(username) && string_leng(password)){
+//             break;
+//         }
+//         cout << "Username and password has to be 8 characters or longer.\n";
+//     }
+//     //Asking for name, age, and city
+//     cout << "Please enter your first name:";
+//     getline(cin,passengerName);
+//     cout << "Please enter your age:";
+//     getline(cin,age);
+//     cout << "Please enter the city where you reside:";
+//     getline(cin,city);
+//     //Saving all the files and putting the data in the character arrays 
+//     savingFile(username_file,username_line,&num);
+//     savingFile(password_file,password_line,&num);
+//     savingFile(Passenger_Name_File,passenger_line,&num);
+//     savingFile(Age_file,age_line,&num);
+//     savingFile(City_File,city_line,&num);
+//     //Wiping the files and creating ofstream objects
+//     ofstream fUser(username_file), fPassword(password_file), fName(Passenger_Name_File),fAge(Age_file),fCity(City_File);
+//     if(!fUser || !fPassword || !fName || !fAge || !fCity){
+//         cout << "The file does not exist.Exiting\n";
+//         return;
+//     }
+//     //if num is not zero, that means those files do not exist, therefore these lines are not required. Else they will paste all the pre-existing data into the corresponding files
+//     if(num == 0){
+//         fUser << username_line << " ";
+//         fPassword << password_line << " ";
+//         fName << passenger_line << " ";
+//         fAge << age_line << " ";
+//         fCity << city_line << " ";
+//     }
+//     //Putting all the data into the corresponding files
+//     fUser << username;
+//     fPassword << password;
+//     fName << passengerName;
+//     fAge << age;
+//     fCity << city;
+//     //Closing the files
+//     fUser.close();
+//     fPassword.close();
+//     fName.close();
+//     fAge.close();
+//     fCity.close();
+// }
 //Since password is private, then a password getter is needed
 string Admin::getPassword() {
     return password;
@@ -394,7 +434,7 @@ void Menu::adminMenu() {
             break;
         }
         else if(decision == 3){
-            admin.displayTrainSchedule();
+            admin.CreatingAndTrainSchedule();
             break;
         }
         else if(decision == 4){
